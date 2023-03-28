@@ -1,0 +1,4 @@
+build*
+*.swp
+.vs*
+StringVersion.h

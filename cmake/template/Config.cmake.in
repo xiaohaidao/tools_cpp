@@ -1,0 +1,5 @@
+# set CMAKE_PREFIX_PATH, and find_package the library
+
+@PACKAGE_INIT@
+
+include ( "${CMAKE_CURRENT_LIST_DIR}/@library_name_target@.cmake" )
