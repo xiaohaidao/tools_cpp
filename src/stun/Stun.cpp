@@ -137,19 +137,19 @@ int stun_read_error(const char *buff, size_t buff_size, ErrorCode *attr) {
     return -1;
   }
   memcpy(attr, buff, sizeof(ErrorCode));
-  return sizeof(ErrorCode);
+  return (int)sizeof(ErrorCode);
 }
 
 int stun_set_error(char *buff, size_t buff_size, const ErrorCode *attr,
                    const char *str) {
 
-  int str_len = strlen(str);
+  size_t str_len = strlen(str);
   if (buff_size < sizeof(ErrorCode) + str_len) {
     return -1;
   }
   memcpy(buff, attr, sizeof(ErrorCode));
   memcpy(buff + sizeof(ErrorCode), str, str_len);
-  return sizeof(ErrorCode) + strlen(str);
+  return (int)(sizeof(ErrorCode) + strlen(str));
 }
 
 const char *stun_error_str(const ErrorCode &ec) {
@@ -235,22 +235,23 @@ int stun_address_to_socket(const MappedAddress *attr, SocketAddr *s) {
   char ip_buff[128] = {};
   char port_buff[8] = {};
   if (family == 0x01) { // 0x01 ipv4, 0x02 ipv6
-    sprintf(ip_buff, "%d.%d.%d.%d", (uint8_t)(attr->ip_addr_in >> 24 & 0xff),
-            (uint8_t)(attr->ip_addr_in >> 16 & 0xff),
-            (uint8_t)(attr->ip_addr_in >> 8 & 0xff),
-            (uint8_t)(attr->ip_addr_in >> 0 & 0xff));
-    sprintf(port_buff, "%d", attr->port);
+    snprintf(ip_buff, sizeof(ip_buff), "%d.%d.%d.%d",
+             (uint8_t)(attr->ip_addr_in >> 24 & 0xff),
+             (uint8_t)(attr->ip_addr_in >> 16 & 0xff),
+             (uint8_t)(attr->ip_addr_in >> 8 & 0xff),
+             (uint8_t)(attr->ip_addr_in >> 0 & 0xff));
+    snprintf(port_buff, sizeof(port_buff), "%d", attr->port);
   } else if (family == 0x02) {
-    sprintf(ip_buff, "%x:%x:%x:%x:%x:%x:%x:%x",
-            (uint16_t)(attr->ip_addr_in6[0] >> 16 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[0] >> 0 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[1] >> 16 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[1] >> 0 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[2] >> 16 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[2] >> 0 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[3] >> 16 & 0xffff),
-            (uint16_t)(attr->ip_addr_in6[3] >> 0 & 0xffff));
-    sprintf(port_buff, "%d", attr->port);
+    snprintf(ip_buff, sizeof(ip_buff), "%x:%x:%x:%x:%x:%x:%x:%x",
+             (uint16_t)(attr->ip_addr_in6[0] >> 16 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[0] >> 0 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[1] >> 16 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[1] >> 0 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[2] >> 16 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[2] >> 0 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[3] >> 16 & 0xffff),
+             (uint16_t)(attr->ip_addr_in6[3] >> 0 & 0xffff));
+    snprintf(port_buff, sizeof(port_buff), "%d", attr->port);
   }
   *s = SocketAddr(ip_buff, port_buff);
 

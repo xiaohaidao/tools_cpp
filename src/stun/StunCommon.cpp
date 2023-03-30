@@ -142,8 +142,8 @@ int StunCommon::response(const char *buff, size_t buff_size, int &error,
       head.transaction_id[2] != transaction_id_[2]) {
 
     // printf("head id error %u %u %u : %u %u %u\n", head.transaction_id[0],
-    //        head.transaction_id[1], head.transaction_id[2], transaction_id_[0],
-    //        transaction_id_[1], transaction_id_[2]
+    //        head.transaction_id[1], head.transaction_id[2],
+    //        transaction_id_[0], transaction_id_[1], transaction_id_[2]
 
     // );
   }

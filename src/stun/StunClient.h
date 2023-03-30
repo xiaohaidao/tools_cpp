@@ -10,7 +10,6 @@ public:
 
   // return -1 when error
   int request(char *buff, size_t buff_size);
-
 };
 
 #endif // STUN_STUNCLIENT_H

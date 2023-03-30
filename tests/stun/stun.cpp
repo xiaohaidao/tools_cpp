@@ -39,7 +39,8 @@ TEST(StunTest, StunResponse) {
   size_t n = sizeof(buff) - 1;
   char out_buff[512] = {};
   for (size_t i = 0; i < n; ++i) {
-    sprintf(out_buff + strlen(out_buff), "%x ", (uint8_t)buff[i]);
+    snprintf(out_buff + strlen(out_buff), sizeof(out_buff) - strlen(out_buff),
+             "%x ", (uint8_t)buff[i]);
   }
   LOG_TRACE("response buff[%d]: %s", n, out_buff);
   SocketAddr addr = {};
