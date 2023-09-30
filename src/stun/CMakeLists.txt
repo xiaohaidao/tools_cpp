@@ -1,11 +1,9 @@
 
-include(common_cpp)
-
 set(library_name "stun")
 add_library(${library_name}
-    Stun.cpp
+    stun.cpp
     StunClient.cpp
-    StunCommon.cpp
+    # StunCommon.cpp
 )
 
 target_link_libraries(${library_name} PUBLIC

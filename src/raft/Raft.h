@@ -2,23 +2,42 @@
 #ifndef RAFT_RAFT_H
 #define RAFT_RAFT_H
 
-#include "min_heap/timer.h"
+#include <stdint.h>
 
-class raft {
+class Raft {
 public:
-private:
   enum Status {
-    kVoter,
+    kFollower,
     kCandidate,
-    kMaster,
+    kLeader,
   };
 
-  struct {
+  struct StatusStruct {
+    int64_t current_term;
+    int64_t vote_for;
+    char *log;
+
+    int64_t commit_index;
+    int64_t last_applied;
+
+    char *next_index;
+    char *match_index;
+  };
+
+  struct StatusData {
     Status status;
+    StatusStruct term;
+  };
 
-  } raft_data_;
+public:
+  Raft();
 
-  timer timer_task_;
+private:
+  StatusData raft_data_;
+
+  void recv_data();
+
+  void timeout();
 };
 
 #endif // RAFT_RAFT_H

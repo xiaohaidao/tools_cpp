@@ -1,0 +1,14 @@
+
+if (NOT GIT_COMMON_CPP_REPOSITORY)
+    set(GIT_COMMON_CPP_REPOSITORY ${GITHUB_URL_PREFIX}https://github.com/xiaohaidao/common_cpp.git)
+endif()
+if (NOT COMMON_CPP_VERSION)
+    set(COMMON_CPP_VERSION dev)
+endif()
+
+FETCHCONTENT_ADDSUB(
+    TARGET common_cpp
+    GIT_URL ${GIT_COMMON_CPP_REPOSITORY}
+    GIT_TAGS ${COMMON_CPP_VERSION}
+)
+
