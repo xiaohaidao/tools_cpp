@@ -51,3 +51,4 @@ list(APPEND CMAKE_MODULE_PATH "${common_cmake_SOURCE_DIR}/cmake")
 #import tool
 include(common)
 include(msvc_static_runtime)
+include(sccache)

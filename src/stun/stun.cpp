@@ -415,7 +415,7 @@ int stun_set_begin(StunStruct *data) {
 
 MappedAddress stun_get_xor_address(const MappedAddress *addr) {
   MappedAddress attr = *addr;
-  int family = attr.family;
+  // int family = attr.family;
   attr.port ^= (MAGIC_COOKIE >> 16);
   // if (family == 0x02) {
   attr.ip_addr_in6[0] ^= MAGIC_COOKIE;
