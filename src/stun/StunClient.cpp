@@ -245,7 +245,7 @@ const char *get_nat_type(NatType type) {
   }
 }
 
-NatType RFC3478(const char *server, unsigned short port,
+NatType rfc3478(const char *server, unsigned short port,
                 unsigned short bind_port) {
   char p[16] = {};
   snprintf(p, sizeof(p), "%u", port);
@@ -312,7 +312,7 @@ NatType RFC3478(const char *server, unsigned short port,
   if (test1(call, stun, buff, sizeof(buff), addr21, change_addr)) {
     return kNone;
   }
-  if (strcmp(addr1.get_ip(), addr21.get_ip())) {
+  if (strcmp(addr1.get_ip(), addr21.get_ip()) != 0) {
     return kSymmetricNAT;
   }
   SocketAddr addr22 = {};

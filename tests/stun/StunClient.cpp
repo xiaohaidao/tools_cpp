@@ -9,11 +9,11 @@
 
 namespace stunclient {
 
-const char *STUN_SERVER_TCP_NO_SUPPORT_OTHER[] = {
+const char *stun_server_tcp_no_support_other[] = {
     "fwa.lifesizecloud.com", "stun.isp.net.au", "stun.voip.blackberry.com",
     "stun.sipnet.com", nullptr};
 
-const char *STUN_SERVER_TCP[] = {"stun.freeswitch.org",
+const char *stun_server_tcp[] = {"stun.freeswitch.org",
                                  "stun.nextcloud.com",
                                  "stunserver.stunprotocol.org",
                                  "stun.radiojar.com",
@@ -21,7 +21,7 @@ const char *STUN_SERVER_TCP[] = {"stun.freeswitch.org",
                                  "stun.voipgate.com",
                                  nullptr};
 
-const char *STUN_SERVER_UDP[] = {"stun.miwifi.com", "stun.qq.com", nullptr};
+const char *stun_server_udp[] = {"stun.miwifi.com", "stun.qq.com", nullptr};
 
 TEST(StunTest, StunResponse1) {
   char buff[] = {
@@ -94,7 +94,7 @@ TEST(StunTest, StunResponseErrorCode) {
 
 TEST(StunTest, StunClientUdpCheckNat) {
   SocketAddr hole;
-  auto type = StunClient::check_udp_nat_type(STUN_SERVER_UDP[1], 3478, 0, hole);
+  auto type = StunClient::check_udp_nat_type(stun_server_udp[1], 3478, 0, hole);
   if (type == StunClient::kNone && hole.get_port() != 0) {
     LOG_TRACE("udp stun server not support OTHER-ADDRESS");
   }
@@ -106,7 +106,7 @@ TEST(StunTest, StunClientUdpCheckNat) {
 
 TEST(StunTest, StunClientTcpCheckNat) {
   SocketAddr hole = {};
-  auto type = StunClient::check_tcp_nat_type(STUN_SERVER_TCP[2], 3478, 0, hole);
+  auto type = StunClient::check_tcp_nat_type(stun_server_tcp[2], 3478, 0, hole);
   if (type == StunClient::kNone && hole.get_port() != 0) {
     LOG_TRACE("tcp stun server not support OTHER-ADDRESS");
   }

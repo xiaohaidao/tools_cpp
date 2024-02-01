@@ -11,7 +11,7 @@
 
 #include "stun/stun.h"
 
-#include <string.h>
+#include <cstring>
 
 // #include "stun/StunDefinePri.h"
 #include "sockets/SocketAddr.h"
