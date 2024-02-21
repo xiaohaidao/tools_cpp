@@ -11,6 +11,8 @@
 #include "TagType.h"
 #include "VarInt.h"
 
+namespace codec {
+
 struct MakeEncode {
   int operator()(const char *v, uint32_t n, uint32_t index, Buff &buff) {
     TagType tag(kLen, index);
@@ -29,13 +31,13 @@ struct MakeEncode {
     if (value.buff) {
       memcpy(buff.buff + buff.offset, value.buff, value.size);
     }
-    buff.offset += value.size;
+    buff.offset += (uint32_t)value.size;
 
     return 0;
   }
 
   int operator()(const std::string &v, uint32_t index, Buff &buff) {
-    return operator()(v.c_str(), v.size(), index, buff);
+    return operator()(v.c_str(), (uint32_t)v.size(), index, buff);
   }
 
   int operator()(const Slice &v, uint32_t index, Buff &buff) {
@@ -73,5 +75,7 @@ template <size_t index, typename T, typename M = MakeEncode>
 int make_encode(Buff &buff, T const &v) {
   return M{}(v, index, buff) * index;
 }
+
+} /* namespace codec */
 
 #endif /* CODEC_MAKEENCODE_H */

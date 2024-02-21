@@ -4,6 +4,8 @@
 
 #include "VarInt.h"
 
+namespace codec {
+
 struct Len {
   const char *buff;
   size_t size;
@@ -29,5 +31,7 @@ struct Len {
     buff = d + size_buff.size;
   }
 };
+
+} /* namespace codec */
 
 #endif /* CODEC_LEN_H */

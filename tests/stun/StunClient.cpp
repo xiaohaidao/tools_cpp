@@ -31,7 +31,7 @@ TEST(StunTest, StunResponse1) {
       "\x00\x01\x0d\x97\x12\xdb\x6e\x12\x00\x20\x00\x08\x00\x01\x29\xca"
       "\x50\x4a\xa9\xc6"}; // 113.88.13.132:2264
 
-  size_t n = sizeof(buff) - 1;
+  size_t const n = sizeof(buff) - 1;
   char out_buff[512] = {};
   for (size_t i = 0; i < n; ++i) {
     snprintf(out_buff + strlen(out_buff), sizeof(out_buff) - strlen(out_buff),
@@ -40,7 +40,7 @@ TEST(StunTest, StunResponse1) {
   LOG_TRACE("response buff[%d]: %02s", n, out_buff);
   SocketAddr addr = {};
   StunClient client(buff, n);
-  int res = client.get_socket_address(addr);
+  int const res = client.get_socket_address(addr);
   EXPECT_TRUE(res >= 0) << "stun get response error! " << res;
   if (res >= 0) {
     EXPECT_TRUE(strcmp(addr.get_ip(), "113.88.13.132") == 0 &&
@@ -57,10 +57,10 @@ TEST(StunTest, StunResponse2) {
       "\x00\x04\x00\x08\x00\x01\x0d\x96\xaf\xb2\xb0\xac\x00\x05\x00\x08"
       "\x00\x01\x1f\x40\x2b\x8b\x12\xea"; // 113.87.163.185:2712
 
-  size_t n = sizeof(buff) - 1;
+  size_t const n = sizeof(buff) - 1;
   SocketAddr addr = {};
   StunClient client(buff, n);
-  int res = client.get_socket_address(addr);
+  int const res = client.get_socket_address(addr);
   EXPECT_TRUE(res >= 0) << "stun get response error! " << res;
   if (res >= 0) {
     EXPECT_TRUE(strcmp(addr.get_ip(), "113.87.163.185") == 0 &&
@@ -80,10 +80,10 @@ TEST(StunTest, StunResponseErrorCode) {
       "\x50\x20\x70\x72\x6f\x74\x6f\x63\x6f\x6c\x00\x00\x80\x22\x00\x04"
       "\x4e\x6f\x6e\x65\x80\x28\x00\x04\xf5\x5d\x47\x4d"; // error 420
 
-  size_t n = sizeof(buff) - 1;
+  size_t const n = sizeof(buff) - 1;
   ErrorCode ec = {};
   StunClient client(buff, n);
-  int res = client.get_error_code(ec);
+  int const res = client.get_error_code(ec);
   EXPECT_TRUE(res >= 0) << "stun get response error! " << res;
   if (res >= 0) {
     EXPECT_TRUE(ec.class_type == 4 && ec.number == 20)
@@ -94,7 +94,7 @@ TEST(StunTest, StunResponseErrorCode) {
 
 TEST(StunTest, StunClientUdpCheckNat) {
   SocketAddr hole;
-  auto type = StunClient::check_udp_nat_type(stun_server_udp[1], 3478, 0, hole);
+  auto type = StunClient::check_udp_nat_type(3478, stun_server_udp[1], 0, hole);
   if (type == StunClient::kNone && hole.get_port() != 0) {
     LOG_TRACE("udp stun server not support OTHER-ADDRESS");
   }
@@ -106,7 +106,7 @@ TEST(StunTest, StunClientUdpCheckNat) {
 
 TEST(StunTest, StunClientTcpCheckNat) {
   SocketAddr hole = {};
-  auto type = StunClient::check_tcp_nat_type(stun_server_tcp[2], 3478, 0, hole);
+  auto type = StunClient::check_tcp_nat_type(3478, stun_server_tcp[2], 0, hole);
   if (type == StunClient::kNone && hole.get_port() != 0) {
     LOG_TRACE("tcp stun server not support OTHER-ADDRESS");
   }

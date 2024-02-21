@@ -5,6 +5,8 @@
 #include "VarInt.h"
 #include "WireType.h"
 
+namespace codec {
+
 struct TagType {
   unsigned char buff[11];
   unsigned char size;
@@ -53,5 +55,7 @@ private:
     memcpy(buff, b, size);
   }
 };
+
+} /* namespace codec */
 
 #endif /* CODEC_TAGTYPE_H */

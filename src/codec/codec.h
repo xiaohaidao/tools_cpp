@@ -4,11 +4,11 @@
 
 #include <vector>
 
-namespace codec {
-
 #include "detail/MakeDecode.h"
 #include "detail/MakeEncode.h"
 #include "detail/MakeLength.h"
+
+namespace codec {
 
 // encode
 
@@ -22,13 +22,14 @@ struct MakeStructEncode {
   template <size_t index, typename T>
   struct MakeStructEncodeT<index, std::vector<T> const &> {
     int operator()(Buff &buff, std::vector<T> const &v) {
-      uint32_t len = v.size();
-      int ret = 0;
-      if ((ret = make_encode<index, uint32_t>(buff, len)) < 0) {
+      uint32_t len = (uint32_t)v.size();
+      int ret = make_encode<index, uint32_t>(buff, len);
+      if (ret < 0) {
         return ret;
       }
       for (auto const &i : v) {
-        if ((ret = MakeStructEncodeT<index, T const &>{}(buff, i)) < 0) {
+        ret = MakeStructEncodeT<index, T const &>{}(buff, i);
+        if (ret < 0) {
           return ret;
         }
       }
@@ -48,8 +49,8 @@ struct MakeStructEncode {
   struct MakeStructEncodeT<index, T const (&)[N]> {
     int operator()(Buff &buff, T const (&v)[N]) {
       for (size_t i = 0; i < N; ++i) {
-        int ret = 0;
-        if ((ret = MakeStructEncodeT<index, T const &>{}(buff, v[i])) < 0) {
+        int ret = MakeStructEncodeT<index, T const &>{}(buff, v[i]);
+        if (ret < 0) {
           return ret;
         }
       }
@@ -62,9 +63,9 @@ struct MakeStructEncode {
   }
 
   template <size_t index = 1, typename T, typename... Ts>
-  int operator()(Buff &buff, T &&v, Ts &&... vs) {
-    int ret = 0;
-    if ((ret = operator()<index, T>(buff, std::forward<T>(v))) < 0) {
+  int operator()(Buff &buff, T &&v, Ts &&...vs) {
+    int ret = operator()<index, T>(buff, std::forward<T>(v));
+    if (ret < 0) {
       return ret;
     }
     return operator()<index + 1, Ts...>(buff, std::forward<Ts>(vs)...);
@@ -82,13 +83,14 @@ struct MakeStructDecode {
   struct MakeStructDecodeT<index, std::vector<T> &> {
     int operator()(CBuff &buff, std::vector<T> &v) {
       uint32_t len;
-      int ret = 0;
-      if ((ret = make_decode<index, uint32_t>(buff, len)) < 0) {
+      int ret = make_decode<index, uint32_t>(buff, len);
+      if (ret < 0) {
         return ret;
       }
       for (size_t i = 0; i < len; ++i) {
         T c;
-        if ((ret = MakeStructDecodeT<index, T &>{}(buff, c)) < 0) {
+        ret = MakeStructDecodeT<index, T &>{}(buff, c);
+        if (ret < 0) {
           return ret;
         }
         v.push_back(std::move(c));
@@ -101,8 +103,8 @@ struct MakeStructDecode {
   struct MakeStructDecodeT<index, char (&)[N]> {
     int operator()(CBuff &buff, char (&v)[N]) {
       Slice vs = {};
-      int ret = 0;
-      if ((ret = make_decode<index, Slice>(buff, vs)) < 0) {
+      int ret = make_decode<index, Slice>(buff, vs);
+      if (ret < 0) {
         return ret;
       }
       if (vs.size != N) {
@@ -117,8 +119,8 @@ struct MakeStructDecode {
   struct MakeStructDecodeT<index, T (&)[N]> {
     int operator()(CBuff &buff, T (&v)[N]) {
       for (size_t i = 0; i < N; ++i) {
-        int ret = 0;
-        if ((ret = MakeStructDecodeT<index, T &>{}(buff, v[i])) < 0) {
+        int ret = MakeStructDecodeT<index, T &>{}(buff, v[i]);
+        if (ret < 0) {
           return ret;
         };
       }
@@ -131,9 +133,9 @@ struct MakeStructDecode {
   }
 
   template <size_t index = 1, typename T, typename... Ts>
-  int operator()(CBuff &buff, T &&v, Ts &&... vs) {
-    int ret = 0;
-    if ((ret = operator()<index, T>(buff, std::forward<T>(v))) < 0) {
+  int operator()(CBuff &buff, T &&v, Ts &&...vs) {
+    int ret = operator()<index, T>(buff, std::forward<T>(v));
+    if (ret < 0) {
       return ret;
     }
     return operator()<index + 1, Ts...>(buff, std::forward<Ts>(vs)...);
@@ -150,7 +152,7 @@ struct MakeStructLength {
   template <size_t index, typename T>
   struct MakeStructLengthT<index, std::vector<T> const &> {
     uint32_t operator()(std::vector<T> const &v) {
-      uint32_t size = make_length<index, uint32_t>(v.size());
+      uint32_t size = make_length<index, uint32_t>((uint32_t)v.size());
       for (auto const &i : v) {
         size += MakeStructLengthT<index, T const &>{}(i);
       }
@@ -182,7 +184,7 @@ struct MakeStructLength {
   }
 
   template <size_t index = 1, typename T, typename... Ts>
-  uint32_t operator()(T &&v, Ts &&... vs) {
+  uint32_t operator()(T &&v, Ts &&...vs) {
     return operator()<index, T>(std::forward<T>(v)) +
            operator()<index + 1, Ts...>(std::forward<Ts>(vs)...);
   }
@@ -204,10 +206,10 @@ struct MakeStructLength {
   }                                                                            \
   template <size_t index, typename T>                                          \
   int make_encode(codec::Buff &buff, struct_type const &v) {                   \
-    codec::Slice slice = {nullptr, make_struct_length(v)};                     \
+    codec::Slice const slice = {nullptr, make_struct_length(v)};               \
                                                                                \
-    int ret = 0;                                                               \
-    if ((ret = codec::MakeEncode{}(slice, index, buff)) < 0) {                 \
+    int const ret = codec::MakeEncode{}(slice, index, buff);                   \
+    if (ret < 0) {                                                             \
       return ret;                                                              \
     }                                                                          \
     codec::Buff b = {buff.buff + buff.offset - slice.size, slice.size, 0};     \
@@ -216,8 +218,8 @@ struct MakeStructLength {
   template <size_t index, typename T>                                          \
   int make_decode(codec::CBuff &buff, struct_type &v) {                        \
     codec::Slice slice = {};                                                   \
-    int ret = 0;                                                               \
-    if ((ret = codec::MakeDecode{}(slice, index, buff)) < 0) {                 \
+    int const ret = codec::MakeDecode{}(slice, index, buff);                   \
+    if (ret < 0) {                                                             \
       return ret;                                                              \
     }                                                                          \
     codec::CBuff b = {slice.buff, slice.size, 0};                              \
@@ -225,7 +227,7 @@ struct MakeStructLength {
   }                                                                            \
   template <size_t index, typename T>                                          \
   uint32_t make_length(struct_type const &v) {                                 \
-    codec::Slice slice = {nullptr, make_struct_length(v)};                     \
+    codec::Slice const slice = {nullptr, make_struct_length(v)};               \
     return codec::MakeLength{}(slice, index);                                  \
   }
 

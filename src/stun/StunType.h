@@ -256,11 +256,11 @@ big-endian
 ~~~
 */
 struct ChangeRequest {
-  int zeros : 24;
-  int /*zero*/ : 1;
-  int b_change_port : 1;
-  int a_change_ip : 1;
-  int /*reserver*/ : 5;
+  unsigned int zeros : 24;
+  unsigned int /*zero*/ : 1;
+  unsigned int b_change_port : 1;
+  unsigned int a_change_ip : 1;
+  unsigned int /*reserver*/ : 5;
 };
 
 static_assert(sizeof(ChangeRequest) == 4, "ChangeRequest type error!");

@@ -3,7 +3,6 @@
 #define CODEC_MAKEDECODE_H
 
 #include <string>
-#include <vector>
 
 #include "Buff.h"
 #include "Fixed.h"
@@ -11,6 +10,8 @@
 #include "Slice.h"
 #include "TagType.h"
 #include "VarInt.h"
+
+namespace codec {
 
 struct MakeDecode {
   int operator()(uint32_t index, CBuff &buff) {
@@ -42,9 +43,9 @@ struct MakeDecode {
       return -1;
     }
     v = value.buff;
-    n = value.size;
+    n = (uint32_t)value.size;
     offset += value.size_buff.size;
-    offset += value.size;
+    offset += (uint32_t)value.size;
     buff.offset = offset;
     return 0;
   }
@@ -55,8 +56,8 @@ struct MakeDecode {
 
   int operator()(std::string &v, uint32_t index, CBuff &buff) {
     Slice slice = {};
-    int ret = 0;
-    if ((ret = operator()(slice, index, buff)) < 0) {
+    int ret = operator()(slice, index, buff);
+    if (ret < 0) {
       return ret;
     }
     v = std::string(slice.buff, slice.size);
@@ -105,5 +106,7 @@ template <size_t index, typename T, typename M = MakeDecode>
 int make_decode(CBuff &buff, T &v) {
   return M{}(v, index, buff) * index;
 }
+
+} /* namespace codec */
 
 #endif /* CODEC_MAKEDECODE_H */

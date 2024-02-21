@@ -11,11 +11,13 @@
 #include "TagType.h"
 #include "VarInt.h"
 
+namespace codec {
+
 struct MakeLength {
   uint32_t operator()(const char *v, size_t n, uint32_t index) {
     TagType tag(kLen, index);
     Len value(v, n);
-    return value.size + value.size_buff.size + tag.size;
+    return (uint32_t)value.size + value.size_buff.size + tag.size;
   }
 
   uint32_t operator()(const std::string &v, uint32_t index) {
@@ -46,5 +48,7 @@ template <size_t index, typename T, typename M = MakeLength>
 uint32_t make_length(T const &v) {
   return M{}(v, index);
 }
+
+} /* namespace codec */
 
 #endif /* CODEC_MAKELENGTH_H */

@@ -1,8 +1,7 @@
 Checks:          >
     clang-diagnostic-*,clang-analyzer-*,
     readability-identifier-naming,
-    modernize-*,performance-*,bugprone-*,misc-*,
-    llvm-*,
+    llvm-*,performance-*,bugprone-*,misc-*,portability-*,
 
 WarningsAsErrors: '*'
 # HeaderFilterRegex: ''

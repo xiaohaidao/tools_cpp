@@ -7,6 +7,8 @@
 
 #include <algorithm>
 
+namespace codec {
+
 struct VarInt {
   unsigned char buff[11];
   unsigned char size;
@@ -26,7 +28,7 @@ struct VarInt {
 
   void byte_from(const unsigned char *d, size_t s = SIZE_MAX) {
     size = decode(d, 0, 0).second;
-    size = std::min(std::min(sizeof(buff) - 1, (size_t)size), s);
+    size = (uint8_t)std::min(std::min(sizeof(buff) - 1, (size_t)size), s);
     buff[size] = 0;
     memcpy(buff, d, size);
   }
@@ -35,16 +37,16 @@ struct VarInt {
     byte_from((const unsigned char *)d, s);
   }
 
-  operator int8_t() { return unzigzag(decode(buff, 0, 0).first); }
-  operator int16_t() { return unzigzag(decode(buff, 0, 0).first); }
-  operator int32_t() { return unzigzag(decode(buff, 0, 0).first); }
-  operator int64_t() { return unzigzag(decode(buff, 0, 0).first); }
+  operator int8_t() { return (int8_t)unzigzag(decode(buff, 0, 0).first); }
+  operator int16_t() { return (int16_t)unzigzag(decode(buff, 0, 0).first); }
+  operator int32_t() { return (int32_t)unzigzag(decode(buff, 0, 0).first); }
+  operator int64_t() { return (int64_t)unzigzag(decode(buff, 0, 0).first); }
   // operator uint8_t() { return decode(buff, 0, 0).first; }
   // operator uint16_t() { return decode(buff, 0, 0).first; }
   // operator uint32_t() { return decode(buff, 0, 0).first; }
   // operator uint64_t() { return decode(buff, 0, 0).first; }
   // operator bool() { return decode(buff, 0, 0).first; }
-  template <typename T> operator T() { return decode(buff, 0, 0).first; }
+  template <typename T> operator T() { return (T)decode(buff, 0, 0).first; }
 
   uint8_t encode(unsigned char *d, uint64_t v, uint8_t offset) {
     uint64_t offset_v = (v >> (offset++ * 7));
@@ -72,5 +74,7 @@ struct VarInt {
            (d >> (sizeof(T) * 8 - 1));
   }
 };
+
+} /* namespace codec */
 
 #endif /* CODEC_VARINT_H */

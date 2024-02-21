@@ -67,36 +67,29 @@ void host_to_net(StunHead &head) {
   head.transaction_id[2] = sockets::host_to_net(head.transaction_id[2]);
 }
 
-} // namespace
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-static void local_set_head(StunStruct *data, const StunHead *head) {
+void local_set_head(StunStruct *data, const StunHead *head) {
   StunHead net = *head;
   net_to_host(net);
   *(StunHead *)(data->head) = net;
 }
 
-static void local_set_attribute(char *buff, StunAttribute attribute,
-                                const void *atrr) {
+void local_set_attribute(char *buff, StunAttribute attribute,
+                         const void *atrr) {
 
-  int attr_len = attribute.length;
+  int const attr_len = attribute.length;
   host_to_net(attribute);
   memcpy(buff, &attribute, sizeof(StunAttribute));
   memcpy(buff + sizeof(StunAttribute), atrr, attr_len);
 }
 
-static StunHead local_get_head(const StunStruct *data) {
+StunHead local_get_head(const StunStruct *data) {
   StunHead head = {};
   head = *(StunHead *)(data->head);
   net_to_host(head);
   return head;
 }
 
-static StunAttribute local_get_attribute_by_type(AttributeType type,
-                                                 int is_ipv4) {
+StunAttribute local_get_attribute_by_type(AttributeType type, int is_ipv4) {
   StunAttribute attr = {};
   attr.type = type;
   switch (type) {
@@ -104,7 +97,7 @@ static StunAttribute local_get_attribute_by_type(AttributeType type,
   case kOtherAddress:
   case kXorMappedAddress:
   case kMappedAddress:
-    attr.length = sizeof(MappedAddress) - !!is_ipv4 * 12;
+    attr.length = sizeof(MappedAddress) - (is_ipv4 ? 12 : 0);
     break;
   case kErrorCode:
     attr.length = sizeof(ErrorCode);
@@ -126,24 +119,24 @@ static StunAttribute local_get_attribute_by_type(AttributeType type,
   return attr;
 }
 
-static void *local_get_attribute_address(const void *iter) {
+void *local_get_attribute_address(const void *iter) {
   return (char *)iter + sizeof(StunAttribute);
 }
 
-static StunAttribute local_get_attribute_iter(const void *iter) {
+StunAttribute local_get_attribute_iter(const void *iter) {
   StunAttribute attr = *(StunAttribute *)iter;
   net_to_host(attr);
   return attr;
 }
 
-static void *local_get_next_attribute_iter(const void *iter) {
+void *local_get_next_attribute_iter(const void *iter) {
   StunAttribute attr = *(StunAttribute *)iter;
   net_to_host(attr);
   return (char *)iter + attr.length + sizeof(StunAttribute);
 }
 
-static int local_get_attribute_value(const void *iter, void *value, int size) {
-  StunAttribute a = local_get_attribute_iter(iter);
+int local_get_attribute_value(const void *iter, int size, void *value) {
+  StunAttribute const a = local_get_attribute_iter(iter);
   // if (a.length > size) {
   //   return -1;
   // }
@@ -164,7 +157,7 @@ static int local_get_attribute_value(const void *iter, void *value, int size) {
     if (size != sizeof(ErrorCode)) {
       return -1;
     }
-    ErrorCode attr = *(ErrorCode *)local_get_attribute_address(iter);
+    ErrorCode const attr = *(ErrorCode *)local_get_attribute_address(iter);
     // net_to_host(attr);
     *(ErrorCode *)value = attr;
     return 0;
@@ -173,7 +166,8 @@ static int local_get_attribute_value(const void *iter, void *value, int size) {
     if (size != sizeof(ChangeRequest)) {
       return -1;
     }
-    ChangeRequest attr = *(ChangeRequest *)local_get_attribute_address(iter);
+    ChangeRequest const attr =
+        *(ChangeRequest *)local_get_attribute_address(iter);
     // net_to_host(attr);
     *(ChangeRequest *)value = attr;
     return 0;
@@ -192,32 +186,32 @@ static int local_get_attribute_value(const void *iter, void *value, int size) {
   return -1;
 }
 
-static void *iter_begin(const StunStruct *data) {
+void *iter_begin(const StunStruct *data) {
   if (data->head == nullptr) {
     return nullptr;
   }
   return (char *)data->head + sizeof(StunHead);
 }
 
-static void *iter_end(const StunStruct *data) {
+void *iter_end(const StunStruct *data) {
   if (data->head == nullptr) {
     return nullptr;
   }
-  StunHead head = local_get_head(data);
+  StunHead const head = local_get_head(data);
   if (!head.message_length) {
     return iter_begin(data);
   }
   return (char *)data->head + head.message_length + sizeof(StunHead);
 }
 
-static void *iter_current(const StunStruct *data) {
+void *iter_current(const StunStruct *data) {
   if (!data->iter) {
     return iter_begin(data);
   }
   return data->iter;
 }
 
-static void *iter_next(const StunStruct *data) {
+void *iter_next(const StunStruct *data) {
   void *current = iter_current(data);
   void *end = iter_end(data);
   if (current == end) {
@@ -230,16 +224,14 @@ static void *iter_next(const StunStruct *data) {
   return current == end ? nullptr : current;
 }
 
-static void iter_set_current(StunStruct *data, void *current) {
-  data->iter = current;
-}
+void iter_set_current(StunStruct *data, void *current) { data->iter = current; }
 
-static int local_check_head(const StunStruct *data) {
+int local_check_head(const StunStruct *data) {
   if (data == nullptr || data->head == nullptr) {
     return -1;
   }
 
-  StunHead head = local_get_head(data);
+  StunHead const head = local_get_head(data);
   if (head.message_type.zero1 != 0 || head.message_type.zero2 != 0) {
     return -1;
   }
@@ -255,6 +247,12 @@ static int local_check_head(const StunStruct *data) {
 
   return 0;
 }
+
+} // namespace
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int stun_init_struct(const char *buff, int size, StunStruct *data, int method) {
   if (size < sizeof(StunHead)) {
@@ -302,7 +300,7 @@ int stun_get_struct(const char *buff, int size, StunStruct *data) {
   if (local_check_head(&d)) {
     return -1;
   }
-  StunHead head = local_get_head(&d);
+  StunHead const head = local_get_head(&d);
   if (size < head.message_length + sizeof(StunHead)) {
     return -1;
   }
@@ -316,8 +314,8 @@ int stun_get_struct_len(const StunStruct *data) {
     return -1;
   }
 
-  StunHead head = local_get_head(data);
-  return head.message_length + sizeof(StunHead);
+  StunHead const head = local_get_head(data);
+  return (int)(head.message_length + sizeof(StunHead));
 }
 
 int stun_compare_id(const StunStruct *data, const StunStruct *other) {
@@ -327,8 +325,8 @@ int stun_compare_id(const StunStruct *data, const StunStruct *other) {
   if (other == nullptr || other->head == nullptr) {
     return -1;
   }
-  StunHead head = local_get_head(data);
-  StunHead other_head = local_get_head(other);
+  StunHead const head = local_get_head(data);
+  StunHead const other_head = local_get_head(other);
   for (size_t i = 0; i < 3; ++i) {
     if (head.transaction_id[i] != other_head.transaction_id[i]) {
       return -1;
@@ -343,7 +341,7 @@ int stun_append_attribute(StunStruct *data, AttributeType type,
   if (data == nullptr || data->head == nullptr || attribute == nullptr) {
     return -1;
   }
-  StunAttribute attr = local_get_attribute_by_type(type, 1);
+  StunAttribute const attr = local_get_attribute_by_type(type, 1);
   StunHead head = local_get_head(data);
   if (attr.length == 0 || attr.length != size) {
     return -1;
@@ -371,7 +369,7 @@ int stun_get_current_type(const StunStruct *data, AttributeType *type) {
   if (current == end) {
     return -1;
   }
-  StunAttribute attr = local_get_attribute_iter(current);
+  StunAttribute const attr = local_get_attribute_iter(current);
   *type = (AttributeType)attr.type;
   return 0;
 }
@@ -386,7 +384,7 @@ int stun_get_current_attribute(const StunStruct *data, void *attribute,
   if (stun_get_current_type(data, &type)) {
     return -1;
   }
-  return local_get_attribute_value(iter_current(data), attribute, size);
+  return local_get_attribute_value(iter_current(data), size, attribute);
 }
 
 int stun_has_next(const StunStruct *data) {

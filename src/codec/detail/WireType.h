@@ -4,6 +4,8 @@
 
 /// referrence: https://protobuf.dev/programming-guides/encoding/
 
+namespace codec {
+
 enum WireType {
   kVarInt = 0,
   kI64 = 1,
@@ -12,5 +14,7 @@ enum WireType {
   /* reserve */
   kI32 = 5,
 };
+
+} /* namespace codec */
 
 #endif /* CODEC_WIRETYPE_H */

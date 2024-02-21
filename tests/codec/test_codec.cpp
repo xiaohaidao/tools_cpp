@@ -6,7 +6,7 @@
 namespace test_codecs {
 
 auto print_byte = [](const char *buff, size_t size) {
-  printf("size %lu\n", size);
+  printf("size %zu\n", size);
   for (size_t i = 0; i < size; ++i) {
     printf("0x%00X ", (unsigned char)buff[i]);
   }
@@ -45,8 +45,8 @@ TEST(codec, test_var_int) {
 TEST(codec, test_var_fixed) {
   using namespace codec;
 
-  float ff32 = 3.525;
-  double ff64 = 1.524;
+  float const ff32 = (float)3.525;
+  double const ff64 = 1.524;
   I32 f32(ff32);
   EXPECT_TRUE(ff32 == (float)f32) << (float)f32;
   EXPECT_TRUE(f32 == ff32) << (float)f32;
@@ -63,8 +63,8 @@ TEST(codec, test_var_fixed) {
 TEST(codec, test_make_len) {
   using namespace codec;
 
-  EXPECT_TRUE((make_length<0, float>(3.525) == 5));
-  EXPECT_TRUE((make_length<16, float>(3.525) == 6));
+  EXPECT_TRUE((make_length<0, float>((float)3.525) == 5));
+  EXPECT_TRUE((make_length<16, float>((float)3.525) == 6));
   EXPECT_TRUE((make_length<0, double>(3.525) == 9));
   EXPECT_TRUE((make_length<16, double>(3.525) == 10));
 
@@ -120,14 +120,15 @@ TEST(codec, test_struct) {
 
   {
     // write data
-    int ret = 0;
-    if ((ret = struct_encode(buff, t1)) < 0) {
+    int ret = struct_encode(buff, t1);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
     // get data
     Temp t2 = {};
     CBuff cbuff{buff.buff, buff.offset, 0};
-    if ((ret = struct_decode(cbuff, t2)) < 0) {
+    ret = struct_decode(cbuff, t2);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
 
@@ -150,14 +151,15 @@ TEST(codec, test_struct) {
 
     // write data
     buff.offset = 0;
-    int ret = 0;
-    if ((ret = struct_encode(buff, t3)) < 0) {
+    int ret = struct_encode(buff, t3);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
     // get data
     Temp1 t2 = {};
     CBuff cbuff{buff.buff, buff.offset, 0};
-    if ((ret = struct_decode(cbuff, t2)) < 0) {
+    ret = struct_decode(cbuff, t2);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
 
@@ -176,14 +178,15 @@ TEST(codec, test_struct) {
   {
     // write data
     buff.offset = 0;
-    int ret = 0;
-    if ((ret = struct_encode(buff, t5)) < 0) {
+    int ret = struct_encode(buff, t5);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
     // get data
     Temp2 t2 = {};
     CBuff cbuff{buff.buff, buff.offset, 0};
-    if ((ret = struct_decode(cbuff, t2)) < 0) {
+    ret = struct_decode(cbuff, t2);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
 
@@ -195,8 +198,8 @@ TEST(codec, test_struct) {
 }
 
 TEST(codec, test_struct_namespace) {
-  EXPECT_TRUE((codec::make_length<0, float>(3.525) == 5));
-  EXPECT_TRUE((codec::make_length<16, float>(3.525) == 6));
+  EXPECT_TRUE((codec::make_length<0, float>((float)3.525) == 5));
+  EXPECT_TRUE((codec::make_length<16, float>((float)3.525) == 6));
   EXPECT_TRUE((codec::make_length<0, double>(3.525) == 9));
   EXPECT_TRUE((codec::make_length<16, double>(3.525) == 10));
 
@@ -210,14 +213,15 @@ TEST(codec, test_struct_namespace) {
 
   {
     // write data
-    int ret = 0;
-    if ((ret = struct_encode(buff, t1)) < 0) {
+    int ret = struct_encode(buff, t1);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
     // get data
     Temp t2 = {};
     codec::CBuff cbuff{buff.buff, buff.offset, 0};
-    if ((ret = struct_decode(cbuff, t2)) < 0) {
+    ret = struct_decode(cbuff, t2);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
 
@@ -264,14 +268,15 @@ TEST(codec, test_struct_vec) {
   t1.i8[4] = 5;
   {
     // write data
-    int ret = 0;
-    if ((ret = struct_encode(buff, t1)) < 0) {
+    int ret = struct_encode(buff, t1);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
     // get data
     TempVec t2 = {};
     CBuff cbuff{buff.buff, buff.offset, 0};
-    if ((ret = struct_decode(cbuff, t2)) < 0) {
+    ret = struct_decode(cbuff, t2);
+    if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
     }
 

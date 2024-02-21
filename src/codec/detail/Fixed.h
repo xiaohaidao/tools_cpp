@@ -4,21 +4,24 @@
 
 #include "VarInt.h"
 
-#ifdef _WIN32
-inline uint16_t net_to_host(uint16_t v) { return nstoh(v); }
-inline uint32_t net_to_host(uint32_t v) { return nltoh(v); }
-inline uint64_t net_to_host(uint64_t v) { return nlltoh(v); }
-inline uint16_t host_to_net(uint16_t v) { return htons(v); }
-inline uint32_t host_to_net(uint32_t v) { return htonl(v); }
-inline uint64_t host_to_net(uint64_t v) { return htonll(v); }
-#else
-inline uint16_t net_to_host(uint16_t v) { return be16toh(v); }
-inline uint32_t net_to_host(uint32_t v) { return be32toh(v); }
-inline uint64_t net_to_host(uint64_t v) { return be64toh(v); }
-inline uint16_t host_to_net(uint16_t v) { return htobe16(v); }
-inline uint32_t host_to_net(uint32_t v) { return htobe32(v); }
-inline uint64_t host_to_net(uint64_t v) { return htobe64(v); }
-#endif // _WIN32
+// #ifdef _WIN32
+// #include <winsock2.h>
+// inline uint16_t net_to_host(uint16_t v) { return ntohs(v); }
+// inline uint32_t net_to_host(uint32_t v) { return ntohl(v); }
+// inline uint64_t net_to_host(uint64_t v) { return ntohll(v); }
+// inline uint16_t host_to_net(uint16_t v) { return htons(v); }
+// inline uint32_t host_to_net(uint32_t v) { return htonl(v); }
+// inline uint64_t host_to_net(uint64_t v) { return htonll(v); }
+// #else
+// inline uint16_t net_to_host(uint16_t v) { return be16toh(v); }
+// inline uint32_t net_to_host(uint32_t v) { return be32toh(v); }
+// inline uint64_t net_to_host(uint64_t v) { return be64toh(v); }
+// inline uint16_t host_to_net(uint16_t v) { return htobe16(v); }
+// inline uint32_t host_to_net(uint32_t v) { return htobe32(v); }
+// inline uint64_t host_to_net(uint64_t v) { return htobe64(v); }
+// #endif // _WIN32
+
+namespace codec {
 
 struct Fix3264 {
   template <typename T> uint8_t encode(unsigned char *d, T v, uint8_t offset) {
@@ -54,7 +57,7 @@ struct I32 : public Fix3264 {
   }
 
   operator float() {
-    uint32_t u = decode<float>(buff, 0, 0).first;
+    uint32_t u = (uint32_t)decode<float>(buff, 0, 0).first;
     // u = net_to_host(u);
     float *v = (float *)&u;
     return *v;
@@ -85,5 +88,7 @@ struct I64 : public Fix3264 {
 
   void byte_from(const char *d) { memcpy(buff, d, sizeof(buff)); }
 };
+
+} /* namespace codec */
 
 #endif /* CODEC_FIXED_H */

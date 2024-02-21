@@ -23,10 +23,10 @@ public:
   enum NatType { kNone, kOpen, kModerate, kStrict };
   static const char *get_nat_type(NatType type);
 
-  static NatType check_tcp_nat_type(const char *server, unsigned short port,
+  static NatType check_tcp_nat_type(unsigned short port, const char *server,
                                     unsigned short bind_port,
                                     SocketAddr &outside);
-  static NatType check_udp_nat_type(const char *server, unsigned short port,
+  static NatType check_udp_nat_type(unsigned short port, const char *server,
                                     unsigned short bind_port,
                                     SocketAddr &outside);
 

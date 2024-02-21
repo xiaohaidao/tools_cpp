@@ -16,16 +16,18 @@ using namespace std::placeholders;
 namespace {
 
 template <typename T> struct C {
-  C(T &t) : s(t) {}
+  C(T &t) : s_(t) {}
   ~C() {
     std::error_code ec;
-    s.close(ec);
+    s_.close(ec);
   }
-  T &s;
+
+private:
+  T &s_;
 };
 
 int stun_address_to_socket(const MappedAddress *attr, SocketAddr *s) {
-  int family = attr->family;
+  int const family = attr->family;
   char ip_buff[128] = {};
   char port_buff[8] = {};
   if (family == 0x01) { // 0x01 ipv4, 0x02 ipv6
@@ -58,7 +60,7 @@ int tcp_call(TcpStream &tcp, const char *buff, size_t len, char *recv_buff,
   if (tcp.write(buff, (size_t)len, ec) <= 0) {
     return -1;
   }
-  int ret = tcp.read(recv_buff, recv_size, ec);
+  int const ret = tcp.read(recv_buff, recv_size, ec);
   if (ret < 0) {
     return -1;
   }
@@ -74,7 +76,7 @@ int udp_call(UdpSocket &udp, const SocketAddr &to, const char *buff, size_t len,
     return -1;
   }
   auto pair = udp.recv_from(recv_buff, recv_size, ec);
-  int ret = pair.first;
+  int const ret = pair.first;
   if (ret < 0 || ec) {
     return -1;
   }
@@ -131,8 +133,8 @@ int udp_call(UdpSocket &udp, const SocketAddr &to, const char *buff, size_t len,
 ~~~
 */
 template <typename T>
-int test1(T &call, StunStruct &stun, const char *buff, int buff_size,
-          SocketAddr &addr, SocketAddr &change_addr, bool initial = true) {
+int test1(T &call, StunStruct &stun, SocketAddr &addr, const char *buff,
+          int buff_size, SocketAddr &change_addr, bool initial = true) {
 
   // auto call = std::bind(tcp_call, tcp, _1, _2, _3, _4);
 
@@ -141,8 +143,8 @@ int test1(T &call, StunStruct &stun, const char *buff, int buff_size,
       return -1;
     }
   }
-  int len = 0;
-  if ((len = stun_get_struct_len(&stun)) < 0) {
+  int const len = stun_get_struct_len(&stun);
+  if (len < 0) {
     return -1;
   }
 
@@ -171,8 +173,8 @@ template <typename T> int test2(T &call, StunStruct &stun, SocketAddr &addr) {
       0) {
     return -1;
   }
-  int len = 0;
-  if ((len = stun_get_struct_len(&stun)) < 0) {
+  int const len = stun_get_struct_len(&stun);
+  if (len < 0) {
     return -1;
   }
 
@@ -197,8 +199,8 @@ template <typename T> int test3(T &call, StunStruct &stun, SocketAddr &addr) {
       0) {
     return -1;
   }
-  int len = 0;
-  if ((len = stun_get_struct_len(&stun)) < 0) {
+  int const len = stun_get_struct_len(&stun);
+  if (len < 0) {
     return -1;
   }
 
@@ -245,11 +247,11 @@ const char *get_nat_type(NatType type) {
   }
 }
 
-NatType rfc3478(const char *server, unsigned short port,
+NatType rfc3478(unsigned short port, const char *server,
                 unsigned short bind_port) {
   char p[16] = {};
   snprintf(p, sizeof(p), "%u", port);
-  SocketAddr to(server, p);
+  SocketAddr const to(server, p);
   snprintf(p, sizeof(p), "%u", bind_port);
 
   /*
@@ -270,7 +272,7 @@ NatType rfc3478(const char *server, unsigned short port,
   if (ec) {
     return kNone;
   }
-  C<UdpSocket> c(udp);
+  C<UdpSocket> const c(udp);
   std::function<int(const char *, size_t, char *, int &)> call =
       std::bind(udp_call, udp, to, _1, _2, _3, _4);
   auto &socket = udp;
@@ -285,10 +287,10 @@ NatType rfc3478(const char *server, unsigned short port,
   /* test 1 */
   SocketAddr addr1 = {};
   SocketAddr change_addr = {};
-  if (test1(call, stun, buff, sizeof(buff), addr1, change_addr)) {
+  if (test1(call, stun, addr1, buff, sizeof(buff), change_addr)) {
     return kNone;
   }
-  SocketAddr local_addr =
+  SocketAddr const local_addr =
       SocketAddr::get_local_socket(socket.native_handle(), ec);
   bool is_open = false;
   if (strcmp(local_addr.get_ip(), addr1.get_ip()) == 0 &&
@@ -303,13 +305,12 @@ NatType rfc3478(const char *server, unsigned short port,
       return kFirewall;
     }
     return kSymmetricNAT;
-  } else {
-    return is_open ? kOpenInternet : kFullCone;
   }
+  return is_open ? kOpenInternet : kFullCone;
 
   /* test 1 and 3 */
   SocketAddr addr21 = {};
-  if (test1(call, stun, buff, sizeof(buff), addr21, change_addr)) {
+  if (test1(call, stun, addr21, buff, sizeof(buff), change_addr)) {
     return kNone;
   }
   if (strcmp(addr1.get_ip(), addr21.get_ip()) != 0) {
@@ -391,13 +392,13 @@ int StunClient::get_error_code(ErrorCode &ec) {
   return -1;
 }
 
-StunClient::NatType StunClient::check_tcp_nat_type(const char *server,
-                                                   unsigned short port,
+StunClient::NatType StunClient::check_tcp_nat_type(unsigned short port,
+                                                   const char *server,
                                                    unsigned short bind_port,
                                                    SocketAddr &outside) {
   char p[16] = {};
   snprintf(p, sizeof(p), "%u", port);
-  SocketAddr to(server, p);
+  SocketAddr const to(server, p);
   bind_port =
       bind_port > 1024 ? bind_port : rand_num() % (65535 - 49152) + 49152;
   snprintf(p, sizeof(p), "%u", bind_port);
@@ -409,7 +410,7 @@ StunClient::NatType StunClient::check_tcp_nat_type(const char *server,
   if (ec) {
     return kNone;
   }
-  C<TcpStream> c(tcp);
+  C<TcpStream> const c(tcp);
 
   std::function<int(const char *, size_t, char *, int &)> call =
       std::bind(tcp_call, tcp, _1, _2, _3, _4);
@@ -425,10 +426,10 @@ StunClient::NatType StunClient::check_tcp_nat_type(const char *server,
   /* test 1 */                                                                 \
   SocketAddr addr1 = {};                                                       \
   SocketAddr change_addr = {};                                                 \
-  if (test1(call, stun, buff, sizeof(buff), addr1, change_addr)) {             \
+  if (test1(call, stun, addr1, buff, sizeof(buff), change_addr)) {             \
     return kNone;                                                              \
   }                                                                            \
-  SocketAddr local_addr =                                                      \
+  SocketAddr const local_addr =                                                \
       SocketAddr::get_local_socket(socket.native_handle(), ec);                \
   if (strcmp(local_addr.get_ip(), addr1.get_ip()) == 0 &&                      \
       local_addr.get_port() == addr1.get_port()) {                             \
@@ -436,7 +437,7 @@ StunClient::NatType StunClient::check_tcp_nat_type(const char *server,
     return kOpen;                                                              \
   }                                                                            \
   /* step 2 test 2 by test 1 */                                                \
-  SocketAddr to2 = change_addr;                                                \
+  SocketAddr const to2 = change_addr;                                          \
   if (change_addr.get_port() == 0) {                                           \
     outside = addr1;                                                           \
     return kNone;                                                              \
@@ -444,7 +445,7 @@ StunClient::NatType StunClient::check_tcp_nat_type(const char *server,
 
 #define CALL_CHECK_NAT2()                                                      \
   SocketAddr addr2 = {};                                                       \
-  if (test1(call, stun, buff, sizeof(buff), addr2, change_addr, false)) {      \
+  if (test1(call, stun, addr2, buff, sizeof(buff), change_addr, false)) {      \
     return kStrict;                                                            \
   }                                                                            \
   if (strcmp(addr2.get_ip(), addr1.get_ip()) == 0 &&                           \
@@ -462,20 +463,20 @@ StunClient::NatType StunClient::check_tcp_nat_type(const char *server,
     outside = addr1;
     return kNone;
   }
-  C<TcpStream> c2(tcp2);
+  C<TcpStream> const c2(tcp2);
   call = std::bind(tcp_call, tcp2, _1, _2, _3, _4);
 
   CALL_CHECK_NAT2()
 }
 
-StunClient::NatType StunClient::check_udp_nat_type(const char *server,
-                                                   unsigned short port,
+StunClient::NatType StunClient::check_udp_nat_type(unsigned short port,
+                                                   const char *server,
                                                    unsigned short bind_port,
                                                    SocketAddr &outside) {
 
   char p[16] = {};
   snprintf(p, sizeof(p), "%u", port);
-  SocketAddr to(server, p);
+  SocketAddr const to(server, p);
   snprintf(p, sizeof(p), "%u", bind_port);
 
   std::error_code ec;
@@ -484,7 +485,7 @@ StunClient::NatType StunClient::check_udp_nat_type(const char *server,
   if (ec) {
     return kNone;
   }
-  C<UdpSocket> c(udp);
+  C<UdpSocket> const c(udp);
 
   std::function<int(const char *, size_t, char *, int &)> call =
       std::bind(udp_call, udp, to, _1, _2, _3, _4);
