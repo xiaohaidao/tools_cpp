@@ -119,7 +119,24 @@ TEST(codec, test_struct) {
   t1.i4 = 3.0;
 
   {
+    int const v = 1000;
+    buff.offset = 0;
     // write data
+    int ret = make_encode<1, int>(buff, v);
+    if (ret < 0) {
+      EXPECT_FALSE(ret < 0) << "ret value " << ret;
+    }
+    int rv = 0;
+    CBuff cbuff{buff.buff, buff.offset, 0};
+    ret = make_decode<1, int>(cbuff, rv);
+    if (ret < 0) {
+      EXPECT_FALSE(ret < 0) << "ret value " << ret;
+    }
+    EXPECT_TRUE(rv == v);
+  }
+  {
+    // write data
+    buff.offset = 0;
     int ret = struct_encode(buff, t1);
     if (ret < 0) {
       EXPECT_FALSE(ret < 0) << "ret value " << ret;
@@ -317,5 +334,37 @@ TEST(codec, test_struct_vec) {
     EXPECT_TRUE((make_length<1, Temp>(t1)) == buff.offset + 2);
   }
 }
+
+namespace test_codec_rpc {
+
+#include "rpc_server/rpc/RpcBind.h"
+#include "rpc_server/rpc/RpcCall.h"
+
+int add(int a, int b) { return a + b; }
+int add1(const int &a, const int &b) { return a + b; }
+
+TEST(codec, test_rpc) {
+  // using namespace rpc;
+  RpcCall call;
+  RpcBind ss;
+  call.bind_send([&](const char *in_buff, size_t in_size, char *out_buff,
+                     size_t out_size) -> int {
+    // codec::CBuff s = {in_buff, in_size, 0};
+    // codec::Buff re = {out_buff, out_size, 0};
+    ss.call(in_buff, in_size, out_buff, out_size);
+    return 0;
+  });
+  ss.bind("add", add);
+  ss.bind("add1", add1);
+
+  int r = 0;
+  call(r, "add", 1, 2);
+  EXPECT_TRUE(r == 3) << "r value:" << r;
+  r = 1;
+  call(r, "add1", 1, 2);
+  EXPECT_TRUE(r == 3) << "r value:" << r;
+}
+
+} // namespace test_codec_rpc
 
 } /* namespace test_codecs */

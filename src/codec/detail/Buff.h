@@ -14,7 +14,6 @@ struct CBuff {
   const char *buff;
   const unsigned int size;
   unsigned int offset;
-  CBuff const *next;
 };
 
 } /* namespace codec */

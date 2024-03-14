@@ -291,7 +291,7 @@ NatType rfc3478(unsigned short port, const char *server,
     return kNone;
   }
   SocketAddr const local_addr =
-      SocketAddr::get_local_socket(socket.native_handle(), ec);
+      SocketAddr::get_local_socket(socket.native(), ec);
   bool is_open = false;
   if (strcmp(local_addr.get_ip(), addr1.get_ip()) == 0 &&
       local_addr.get_port() == addr1.get_port()) {
@@ -430,7 +430,7 @@ StunClient::NatType StunClient::check_tcp_nat_type(unsigned short port,
     return kNone;                                                              \
   }                                                                            \
   SocketAddr const local_addr =                                                \
-      SocketAddr::get_local_socket(socket.native_handle(), ec);                \
+      SocketAddr::get_local_socket(socket.native(), ec);                       \
   if (strcmp(local_addr.get_ip(), addr1.get_ip()) == 0 &&                      \
       local_addr.get_port() == addr1.get_port()) {                             \
     outside = addr1;                                                           \

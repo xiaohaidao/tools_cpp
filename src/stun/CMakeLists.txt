@@ -18,7 +18,7 @@ target_include_directories(${library_name} PRIVATE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
 )
 
-target_compile_features(${library_name} PRIVATE
+target_compile_features(${library_name} PUBLIC
     cxx_std_11
 )
 
