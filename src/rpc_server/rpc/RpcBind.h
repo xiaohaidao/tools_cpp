@@ -12,12 +12,12 @@
 class RpcBind {
 public:
   /**
-   * @brief 
-   * 
-   * @tparam F 
-   * @param name 
-   * @param f 
-   * @return constexpr auto 
+   * @brief
+   *
+   * @tparam F
+   * @param name
+   * @param f
+   * @return constexpr auto
    */
   template <typename F> constexpr auto bind(const char *name, F &&f) {
     using Func = FuncTypeHelp<std::decay_t<decltype(f)>>;
@@ -54,12 +54,12 @@ public:
   }
 
   /**
-   * @brief 
-   * 
-   * @param in_buff 
-   * @param in_size 
-   * @param out_buff 
-   * @param out_size 
+   * @brief
+   *
+   * @param in_buff
+   * @param in_size
+   * @param out_buff
+   * @param out_size
    */
   void call(const char *in_buff, size_t in_size, char *out_buff,
             size_t out_size) const {
@@ -93,7 +93,8 @@ private:
   }
 
   template <typename Tuple, size_t... I>
-  constexpr auto get_param(codec::CBuff &in, Tuple &&param, std::index_sequence<I...>) {
+  constexpr auto get_param(codec::CBuff &in, Tuple &&param,
+                           std::index_sequence<I...>) {
     int ret = 0;
     ((ret = ret < 0 ? ret
                     : make_decode<0, typename std::tuple_element<

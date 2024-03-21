@@ -5,6 +5,8 @@ set(test_name "tools_test")
 add_executable(${test_name}
     stun/StunClient.cpp
     codec/test_codec.cpp
+    RpcServer/test_monad.cpp
+    RpcServer/test_rpc.cpp
     # main.cpp
 )
 

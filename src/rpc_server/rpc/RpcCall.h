@@ -20,12 +20,12 @@ struct RpcCall {
   };
 
   /**
-   * @brief 
-   * 
-   * @tparam Args 
-   * @param name 
-   * @param args 
-   * @return constexpr int 
+   * @brief
+   *
+   * @tparam Args
+   * @param name
+   * @param args
+   * @return constexpr int
    */
   template <typename... Args>
   constexpr int operator()(const char *name, Args &&...args) {
@@ -43,14 +43,14 @@ struct RpcCall {
   }
 
   /**
-   * @brief 
-   * 
-   * @tparam R 
-   * @tparam Args 
-   * @param re 
-   * @param name 
-   * @param args 
-   * @return constexpr int 
+   * @brief
+   *
+   * @tparam R
+   * @tparam Args
+   * @param re
+   * @param name
+   * @param args
+   * @return constexpr int
    */
   template <typename R, typename... Args>
   constexpr int operator()(R &re, const char *name, Args &&...args) {
@@ -72,9 +72,9 @@ struct RpcCall {
   }
 
   /**
-   * @brief 
-   * 
-   * @param f 
+   * @brief
+   *
+   * @param f
    */
   void
   bind_send(const std::function<int(const char *, size_t, char *, size_t)> &f) {
@@ -114,7 +114,7 @@ private:
 
   template <typename T, typename... Args>
   constexpr int encode_call(codec::CBuff &cbuff, codec::Buff &buff, T &&t,
-                  Args &&...args) {
+                            Args &&...args) {
     int const r = make_encode<0, T>(buff, std::forward<T>(t));
     if (r < 0) {
       return r;
